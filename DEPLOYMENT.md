@@ -15,7 +15,7 @@ This guide covers deploying the GPT to Doc application using Coolify.
 1. Log into your Coolify instance
 2. Create a new project
 3. Add a new service/application
-4. Select **Docker** as the source type
+4. **IMPORTANT**: Select **Docker** as the build pack (NOT Nixpacks auto-detection)
 
 ### 2. Configure the Service
 
@@ -112,10 +112,23 @@ LOG_LEVEL=DEBUG|INFO|WARNING|ERROR|CRITICAL
 
 ## Troubleshooting
 
+### Nixpacks Build Failure Error
+**Error**: "Nixpacks failed to detect the application type"
+
+**Solution**:
+1. In Coolify, go to your service settings
+2. Look for **Build Pack** or **Build Method** option
+3. Select **Docker** instead of **Nixpacks** or **Auto-detect**
+4. Make sure **Dockerfile** field points to `./Dockerfile` or just `Dockerfile`
+5. Redeploy
+
+This project uses a custom Dockerfile that combines both Node.js (for React frontend) and Python (for Flask backend) in a multi-stage build. Nixpacks auto-detection doesn't recognize this structure, so Docker build pack must be used explicitly.
+
 ### Container Won't Start
 1. Check the build logs in Coolify dashboard
 2. Verify all environment variables are set correctly
 3. Ensure port 5000 is not already in use
+4. Make sure the build pack is set to **Docker**, not Nixpacks
 
 ### 502 Bad Gateway
 1. Wait for the health checks to pass (start period is 40s)
