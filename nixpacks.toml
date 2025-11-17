@@ -1,3 +1,0 @@
-[build]
-# Use Docker build instead of Nixpacks auto-detection
-dockerfile = "./Dockerfile"
