@@ -1,0 +1,51 @@
+{
+  "projectName": "GPT to Doc",
+  "services": {
+    "gpt-to-doc": {
+      "source": {
+        "type": "github",
+        "repo": "andupetcu/gpt-to-doc",
+        "branch": "master"
+      },
+      "build": {
+        "dockerfile": "Dockerfile",
+        "buildContext": "."
+      },
+      "ports": [
+        {
+          "container": 5000,
+          "host": 5000,
+          "protocol": "http"
+        }
+      ],
+      "environment": {
+        "FLASK_DEBUG": "false",
+        "FLASK_HOST": "0.0.0.0",
+        "FLASK_PORT": "5000",
+        "LOG_LEVEL": "INFO",
+        "FILE_CLEANUP_ENABLED": "true",
+        "FILE_CLEANUP_INTERVAL": "3600",
+        "FILE_MAX_AGE": "3600"
+      },
+      "volumes": [
+        {
+          "source": "uploads",
+          "target": "/app/backend/uploads",
+          "type": "named"
+        },
+        {
+          "source": "outputs",
+          "target": "/app/backend/outputs",
+          "type": "named"
+        }
+      ],
+      "healthCheck": {
+        "test": ["CMD", "curl", "-f", "http://localhost:5000/"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 40
+      }
+    }
+  }
+}
