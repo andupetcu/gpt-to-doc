@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Primary Meta Tags -->
+        <title>ChatGPT to DOC Converter | Convert AI Chat to Word Documents and MD files</title>
+        <meta name="title" content="ChatGPT to DOC Converter | Convert AI Chat to Word Documents and PDFs">
+        <meta name="description" content="Easily convert your ChatGPT or any other LLM conversations to Word documents and PDFs. Save time with our free, fast, and secure converter tool. No sign-up required.">
+        <meta name="keywords" content="ChatGPT converter, markdown converter, DOC converter, PDF converter, AI chat to Word, convert ChatGPT, document conversion">
+        <meta name="robots" content="index, follow">
+        <meta name="language" content="English">
+        <meta name="author" content="Cloudz.ro">
+        
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="/favicon.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        
+        <!-- Canonical URL -->
+        <link rel="canonical" href="https://yourdomain.com/chatgpt-to-doc-converter">
+        
+        <!-- Open Graph / Facebook 
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://yourdomain.com/chatgpt-to-doc-converter">
+        <meta property="og:title" content="ChatGPT to DOC Converter | Easily Save AI Conversations">
+        <meta property="og:description" content="Convert your ChatGPT conversations to Word documents instantly. Free, secure, and no registration needed.">
+        <meta property="og:image" content="https://yourdomain.com/og-image.jpg">
+        
+        Twitter 
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="https://yourdomain.com/chatgpt-to-doc-converter">
+        <meta property="twitter:title" content="ChatGPT to DOC Converter | Save AI Chats as DOC">
+        <meta property="twitter:description" content="Transform ChatGPT conversations into downloadable Word documents with one click. Free online tool.">
+        <meta property="twitter:image" content="https://yourdomain.com/twitter-image.jpg">
+        -->
+
+        <!-- Structured Data / JSON-LD -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "ChatGPT to DOC Converter",
+          "url": "https://yourdomain.com/chatgpt-to-doc-converter",
+          "description": "A free tool to convert ChatGPT conversations to Microsoft Word documents and PDFs",
+          "applicationCategory": "Productivity",
+          "operatingSystem": "All",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "creator": {
+            "@type": "Organization",
+            "name": "Cloudz.RO"
+          }
+        }
+        </script>
+        
+        <!-- Preconnect to required origins -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://cdn.yourdomain.com">
+        
+        <!-- CSS and other resources -->
+        <link rel="stylesheet" href="styles.css">
+        
+        <!-- CodeMirror CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/github.min.css">
+        
+        <!-- Marked.js for markdown parsing -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+        
+        <!-- Additional Performance Optimization -->
+        <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CRN6XWKF50"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CRN6XWKF50');
+</script>
+      </head>
+      <body>
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-content">
+                <div class="spinner active"></div>
+                <div class="loading-text">Converting your document...</div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <h1>Markdown to DOCX / MD Converter</h1>
+    
+            <!-- Mode Toggle Tabs -->
+            <div class="mode-tabs">
+                <button class="tab-button active" onclick="switchMode('editor')" id="editorTab">
+                    📝 Live Editor
+                </button>
+                <button class="tab-button" onclick="switchMode('upload')" id="uploadTab">
+                    📁 File Upload
+                </button>
+            </div>
+
+            <!-- Live Editor Mode (Default) -->
+            <div class="mode-content" id="editorMode">
+                <div class="mode-header">
+                    <h2>Live Markdown Editor</h2>
+                    <p>Write and preview your markdown in real-time</p>
+                </div>
+                
+                <div class="editor-controls">
+                    <button onclick="togglePreview()" class="btn-secondary" id="previewToggle">Show Preview</button>
+                    <button onclick="clearEditor()" class="btn-secondary">Clear</button>
+                    <button onclick="loadSample()" class="btn-secondary">Load Sample</button>
+                </div>
+                
+                <div class="editor-container" id="editorContainer">
+                    <div class="editor-pane">
+                        <div class="pane-header">Markdown Editor</div>
+                        <textarea id="markdownText" placeholder="Start typing your markdown here..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="filename-section">
+                    <label for="documentFilename">File Name:</label>
+                    <input type="text" id="documentFilename" placeholder="document" value="document" />
+                    <span class="filename-extension">.docx / .md</span>
+                </div>
+                
+                <div class="button-group">
+                    <button onclick="convertText('docx')" class="btn">Convert to DOCX</button>
+                <!--    <button onclick="convertText('pdf')" class="btn btn-secondary">Convert to PDF</button> -->
+                    <button onclick="saveMdFile()" class="btn btn-tertiary">Save as .md</button>
+                </div>
+            </div>
+
+            <!-- File Upload Mode (Hidden by default) -->
+            <div class="mode-content" id="uploadMode" style="display: none;">
+                <div class="mode-header">
+                    <h2>Upload Markdown Files</h2>
+                    <p>Select one or more markdown files to convert</p>
+                </div>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag and drop your markdown files here, or click to browse</p>
+                    <input type="file" id="fileInput" class="file-input" multiple accept=".md,.markdown,.txt">
+                    <button onclick="uploadFileAdvanced()" class="btn">Convert Selected Files</button>
+                </div>
+                
+                <p class="upload-note"><small>💡 You can select multiple files. Advanced options below apply to all uploads.</small></p>
+            </div>
+                
+                <!-- Advanced Options -->
+                <div class="advanced-options">
+                    <h3>Advanced Options</h3>
+                    <div class="options-grid">
+                        <div class="option-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableToc" class="option-checkbox">
+                                <span class="checkmark"></span>
+                                Table of Contents
+                            </label>
+                            <small>Generate automatic table of contents</small>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="numberedSections" class="option-checkbox">
+                                <span class="checkmark"></span>
+                                Numbered Sections
+                            </label>
+                            <small>Automatically number headings (1.1, 1.2, etc.)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="custom-headers">
+                        <h4>Custom Headers & Footers</h4>
+                        <div class="header-footer-inputs">
+                            <div class="input-group">
+                                <label for="customHeader">Header Text:</label>
+                                <input type="text" id="customHeader" placeholder="e.g., Company Name - Document Title">
+                            </div>
+                            <div class="input-group">
+                                <label for="customFooter">Footer Text:</label>
+                                <input type="text" id="customFooter" placeholder="e.g., Page $page$ of $total$">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <p id="message"></p>
+        </div>
+
+        <!-- Live Preview Overlay -->
+        <div class="preview-overlay" id="previewOverlay">
+            <div class="preview-modal" id="previewModal">
+                <div class="preview-modal-header">
+                    <h3 class="preview-modal-title">
+                        <span>📖</span>
+                        Live Preview
+                    </h3>
+                    <button class="preview-close-button" id="previewCloseButton" type="button">
+                        ×
+                    </button>
+                </div>
+                <div class="preview-modal-content" id="markdownPreview">
+                    <p><em>Start typing to see the preview...</em></p>
+                </div>
+            </div>
+        </div>
+    
+        <!-- CodeMirror JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/continuelist.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/display/placeholder.min.js"></script>
+        
+        <script src="script.js?v=2025090515"></script>
+    </body>
+</html>
