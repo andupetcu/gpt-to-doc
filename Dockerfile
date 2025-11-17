@@ -1,38 +1,55 @@
-# Use an official Python image as the base
-FROM python:3.9
+# Build stage for React frontend
+FROM node:18-alpine AS frontend-builder
 
-# Install Node.js for React build
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
-
-# Install Pandoc and LaTeX dependencies for PDF conversion
-RUN apt-get update && apt-get install -y pandoc texlive texlive-latex-base texlive-fonts-recommended texlive-extra-utils texlive-latex-extra
-
-# Set the working directory
-WORKDIR /app
-
-# Copy frontend files and build React app
-COPY frontend/package*.json frontend/
 WORKDIR /app/frontend
-RUN npm install
 
+# Copy package files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm install --legacy-peer-deps
+
+# Copy source files
 COPY frontend/ .
+
+# Build the React app
 RUN npm run build
 
-# Copy backend files
+# Main application stage
+FROM python:3.9-slim
+
+# Install system dependencies including Pandoc and LaTeX
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pandoc \
+    texlive \
+    texlive-latex-base \
+    texlive-fonts-recommended \
+    texlive-extra-utils \
+    texlive-latex-extra \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
+# Copy backend files
 COPY backend/ backend/
 
-# Move built React app to backend static folder
-RUN mkdir -p backend/build && cp -r frontend/build/* backend/build/
+# Copy built React app from builder stage
+COPY --from=frontend-builder /app/frontend/build backend/build/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
 WORKDIR /app/backend
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Create necessary directories
+RUN mkdir -p uploads outputs
 
-# Expose the Flask port
+# Expose the port
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:5000/', timeout=5)" || exit 1
+
+# Run with gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
