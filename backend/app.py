@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file, jsonify, send_from_directory
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import subprocess
@@ -18,6 +19,24 @@ from config import Config
 # Initialize Flask app
 app = Flask(__name__, static_folder="build", static_url_path="/")
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_FILE_SIZE
+
+# Enable CORS for Next.js frontend
+CORS(app,
+    resources={
+        r"/convert*": {
+            "origins": ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://192.168.68.50:3000", "http://192.168.68.50:3001"],
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type"],
+            "supports_credentials": True
+        },
+        r"/save-md": {
+            "origins": ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://192.168.68.50:3000", "http://192.168.68.50:3001"],
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type"],
+            "supports_credentials": True
+        }
+    }
+)
 
 # Setup logging
 logging.basicConfig(
