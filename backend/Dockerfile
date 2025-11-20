@@ -24,9 +24,9 @@ COPY . .
 # Create necessary directories for file handling
 RUN mkdir -p uploads outputs
 
-# Health check endpoint - using curl to check Flask is responding
+# Health check endpoint - use the /health endpoint (won't fail on 404 from missing build dir)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+    CMD curl -f http://localhost:5000/health || exit 1
 
 # Expose port
 EXPOSE 5000

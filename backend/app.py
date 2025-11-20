@@ -207,14 +207,38 @@ if Config.FILE_CLEANUP_ENABLED:
     cleanup_thread.start()
     logger.info("File cleanup scheduler started")
 
+@app.route("/health")
+def health_check():
+    """Health check endpoint for deployment platforms (Docker, Kubernetes, etc)."""
+    return jsonify({"status": "healthy", "service": "markdown-converter-api"}), 200
+
 @app.route("/")
 def serve_frontend():
-    """Serve the React frontend index.html page."""
-    response = send_from_directory("build", "index.html")
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+    """Serve the React frontend index.html page or return API info."""
+    # Try to serve React build if it exists, otherwise return API info
+    try:
+        response = send_from_directory("build", "index.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception:
+        # If build directory doesn't exist (common in microservice deployments),
+        # return API information instead
+        return jsonify({
+            "service": "Markdown to DOCX/PDF Converter API",
+            "version": "2.0.0",
+            "endpoints": {
+                "health": "/health",
+                "convert_text": "POST /convert-text",
+                "convert_text_advanced": "POST /convert-text-advanced",
+                "convert_file": "POST /convert",
+                "convert_advanced": "POST /convert-advanced",
+                "convert_batch": "POST /convert-batch",
+                "convert_pdf": "POST /convert-pdf",
+                "save_markdown": "POST /save-md"
+            }
+        }), 200
 
 @app.route('/<path:filename>')
 def serve_static(filename):
