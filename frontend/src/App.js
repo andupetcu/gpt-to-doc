@@ -143,6 +143,17 @@ function App() {
         </TabPanel>
       </StyledPaper>
 
+      {/* Buy Me a Coffee button at bottom */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <a href="https://www.buymeacoffee.com/andreipetcu" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            alt="Buy Me A Coffee"
+            style={{ height: '40px', width: 'auto' }}
+          />
+        </a>
+      </Box>
+
       <LoadingOverlay
         open={loading}
         message={loadingMessage}
