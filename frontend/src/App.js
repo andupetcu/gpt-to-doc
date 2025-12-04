@@ -91,6 +91,17 @@ function App() {
 
   return (
     <StyledContainer maxWidth="lg">
+      {/* Buy Me a Coffee button container */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <a href="https://www.buymeacoffee.com/andreipetcu" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            alt="Buy Me A Coffee"
+            style={{ height: '40px', width: 'auto' }}
+          />
+        </a>
+      </Box>
+
       <Typography variant="h1" component="h1" align="center" gutterBottom>
         ChatGPT to Word (DOCX) Converter — Free & Private
       </Typography>
