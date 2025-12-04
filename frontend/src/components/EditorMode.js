@@ -36,6 +36,12 @@ const EditorContainer = styled(Paper)(({ theme }) => ({
   overflow: 'hidden',
   height: '600px',
   marginBottom: theme.spacing(2),
+  '& .cm-editor': {
+    height: '100%',
+  },
+  '& .cm-scroller': {
+    overflow: 'auto !important',
+  },
 }));
 
 const PreviewDialog = styled(Dialog)(({ theme }) => ({
