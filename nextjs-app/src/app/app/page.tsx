@@ -293,7 +293,7 @@ export default function ConverterPage() {
                 onChange={(e) => setMarkdown(e.target.value)}
                 placeholder="Paste your Markdown here..."
                 disabled={!canConvert && !isSignedIn}
-                className="w-full h-64 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 resize-vertical disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-64 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 resize-vertical overflow-auto disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <div className="flex gap-2">
                 <Button
@@ -352,7 +352,7 @@ export default function ConverterPage() {
                 onChange={(e) => setMarkdown(e.target.value)}
                 placeholder="Paste your Markdown here for PDF conversion..."
                 disabled={!canConvert && !isSignedIn}
-                className="w-full h-64 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 resize-vertical disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-64 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 resize-vertical overflow-auto disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <div className="flex gap-2">
                 <Button
