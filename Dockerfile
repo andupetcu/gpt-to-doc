@@ -18,7 +18,7 @@ RUN npm run build
 # Main application stage
 FROM python:3.9-slim
 
-# Install system dependencies including Pandoc, LaTeX, and curl
+# Install system dependencies including Pandoc, LaTeX, curl, and Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     pandoc \
@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-fonts-recommended \
     texlive-extra-utils \
     texlive-latex-extra \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -34,11 +37,18 @@ WORKDIR /app
 # Copy backend files
 COPY backend/ backend/
 
+# Copy templates directory
+COPY templates/ templates/
+
 # Copy built React app from builder stage
 COPY --from=frontend-builder /app/frontend/build backend/build/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Install Node.js docx package for themed document generation
+WORKDIR /app/templates
+RUN npm init -y && npm install docx marked
 
 WORKDIR /app/backend
 

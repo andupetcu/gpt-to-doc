@@ -8,8 +8,15 @@ import {
   Grid,
   Paper,
   Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Link,
+  Chip,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { Download } from '@mui/icons-material';
 
 const OptionsContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -27,6 +34,17 @@ const OptionGroup = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
+// Theme definitions with colors and descriptions
+const THEMES = {
+  plain: { name: 'Plain (Default)', description: 'Simple, clean output', color: '#666' },
+  color: { name: 'Professional Color', description: 'Blue professional styling', color: '#1F4E79' },
+  ocean: { name: 'Ocean Corporate', description: 'Deep navy enterprise look', color: '#0D3B66' },
+  sunset: { name: 'Sunset Warm', description: 'Orange/coral warm tones', color: '#D35400' },
+  midnight: { name: 'Midnight Tech', description: 'Dark modern tech style', color: '#2C3E50' },
+  forest: { name: 'Forest Nature', description: 'Green natural theme', color: '#1E8449' },
+  executive: { name: 'Executive Minimal', description: 'Classic black/white elegance', color: '#1C1C1C' },
+};
+
 const AdvancedOptions = ({ options, onChange }) => {
   const handleCheckboxChange = (field) => (event) => {
     onChange(prev => ({
@@ -42,8 +60,80 @@ const AdvancedOptions = ({ options, onChange }) => {
     }));
   };
 
+  const handleThemeChange = (event) => {
+    onChange(prev => ({
+      ...prev,
+      theme: event.target.value
+    }));
+  };
+
+  const selectedTheme = options.theme || 'plain';
+
   return (
     <OptionsContainer elevation={1}>
+      <SectionTitle variant="h6" component="h3">
+        Document Theme
+      </SectionTitle>
+
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="theme-select-label">Export Theme</InputLabel>
+            <Select
+              labelId="theme-select-label"
+              value={selectedTheme}
+              label="Export Theme"
+              onChange={handleThemeChange}
+            >
+              {Object.entries(THEMES).map(([key, theme]) => (
+                <MenuItem key={key} value={key}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: '50%',
+                        backgroundColor: theme.color,
+                        border: '1px solid rgba(0,0,0,0.1)',
+                      }}
+                    />
+                    <Box>
+                      <Typography variant="body2">{theme.name}</Typography>
+                    </Box>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant="body2" color="text.secondary">
+              {THEMES[selectedTheme]?.description}
+            </Typography>
+            {selectedTheme !== 'plain' && (
+              <Link
+                href={`/templates/${selectedTheme}.docx`}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  fontSize: '0.75rem',
+                  ml: 1,
+                }}
+              >
+                <Download sx={{ fontSize: 14 }} />
+                Preview
+              </Link>
+            )}
+          </Box>
+        </Grid>
+      </Grid>
+
+      <Divider sx={{ my: 3 }} />
+
       <SectionTitle variant="h6" component="h3">
         Advanced Options
       </SectionTitle>

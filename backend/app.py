@@ -609,6 +609,119 @@ def convert_md_to_pdf():
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
+# =============================================================================
+# THEMED DOCUMENT CONVERSION ENDPOINTS
+# =============================================================================
+
+# Available themes for styled DOCX export
+AVAILABLE_THEMES = {
+    'plain': 'Plain (Default)',
+    'color': 'Professional Color',
+    'ocean': 'Ocean Corporate',
+    'sunset': 'Sunset Warm',
+    'midnight': 'Midnight Tech',
+    'forest': 'Forest Nature',
+    'executive': 'Executive Minimal'
+}
+
+@app.route('/templates/<theme_name>.docx', methods=['GET'])
+def get_template_preview(theme_name):
+    """Serve template preview DOCX files for download."""
+    # Map theme names to file names
+    theme_files = {
+        'color': 'theme0-color.docx',
+        'ocean': 'theme1-ocean-corporate.docx',
+        'sunset': 'theme2-sunset-warm.docx',
+        'midnight': 'theme3-midnight-tech.docx',
+        'forest': 'theme4-forest-nature.docx',
+        'executive': 'theme5-executive-minimal.docx'
+    }
+
+    if theme_name not in theme_files:
+        return jsonify({"error": f"Template '{theme_name}' not found. Available: {list(theme_files.keys())}"}), 404
+
+    template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', theme_files[theme_name])
+
+    if not os.path.exists(template_path):
+        logger.error(f"Template file not found: {template_path}")
+        return jsonify({"error": "Template file not found"}), 404
+
+    logger.info(f"Serving template preview: {theme_name}")
+    return send_file(template_path, as_attachment=True, download_name=f"template-{theme_name}.docx")
+
+@app.route('/themes', methods=['GET'])
+def get_available_themes():
+    """Return list of available themes for the frontend."""
+    return jsonify({
+        "themes": AVAILABLE_THEMES,
+        "default": "plain"
+    })
+
+@app.route('/convert-themed', methods=['POST'])
+@limiter.limit(Config.RATE_LIMIT_TEXT)
+def convert_md_text_to_themed_docx():
+    """Convert markdown text to styled DOCX using theme templates."""
+    try:
+        data = request.get_json()
+        if not data or 'markdown' not in data:
+            logger.warning("No markdown text in themed request")
+            return jsonify({"error": "No Markdown text provided"}), 400
+
+        markdown_text = data['markdown']
+        theme = data.get('theme', 'plain')
+
+        # Validate theme
+        if theme not in AVAILABLE_THEMES:
+            logger.warning(f"Invalid theme requested: {theme}")
+            return jsonify({"error": f"Invalid theme. Available: {list(AVAILABLE_THEMES.keys())}"}), 400
+
+        # Validate text length
+        if len(markdown_text) > Config.MAX_FILE_SIZE:
+            logger.warning(f"Text too large for themed conversion: {len(markdown_text)} bytes")
+            return jsonify({"error": "Text content too large"}), 400
+
+        if not markdown_text.strip():
+            logger.warning("Empty markdown text for themed conversion")
+            return jsonify({"error": "Markdown text is empty"}), 400
+
+        temp_filename = str(uuid.uuid4())
+        md_path = os.path.join(Config.UPLOAD_FOLDER, f"{temp_filename}.md")
+        docx_path = os.path.join(Config.OUTPUT_FOLDER, f"{temp_filename}.docx")
+
+        # Write markdown to temp file
+        with open(md_path, 'w', encoding='utf-8') as md_file:
+            md_file.write(markdown_text)
+
+        # Use plain pandoc for 'plain' theme, Node.js converter for others
+        if theme == 'plain':
+            # Use Pandoc for plain conversion
+            result = subprocess.run(
+                ["pandoc", md_path, "-o", docx_path],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+        else:
+            # Use Node.js themed converter
+            converter_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'convert-with-theme.js')
+            result = subprocess.run(
+                ["node", converter_path, md_path, docx_path, theme],
+                check=True,
+                capture_output=True,
+                text=True,
+                cwd=os.path.dirname(converter_path)  # Run from templates directory
+            )
+
+        logger.info(f"Successfully converted text to themed DOCX: {temp_filename} (theme: {theme})")
+        return send_file(docx_path, as_attachment=True, download_name=f"converted-{theme}.docx")
+
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Themed conversion failed: {e.stderr}")
+        return jsonify({"error": "Themed conversion failed. Please check your markdown text."}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error in convert_md_text_to_themed_docx: {str(e)}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
 @app.route('/save-md', methods=['POST'])
 @limiter.limit(Config.RATE_LIMIT_TEXT)
 def save_md_file():

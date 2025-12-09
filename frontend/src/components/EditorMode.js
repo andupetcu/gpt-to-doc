@@ -124,6 +124,7 @@ const EditorMode = ({ showLoading, hideLoading, showMessage }) => {
     numberedSections: false,
     customHeader: '',
     customFooter: '',
+    theme: 'plain',
   });
 
   // Auto-save functionality
@@ -340,20 +341,34 @@ This sample demonstrates all advanced options. Enable different combinations in 
       return;
     }
 
-    showLoading(`Converting your text to ${format.toUpperCase()}...`);
+    const selectedTheme = advancedOptions.theme || 'plain';
+    const themeName = selectedTheme !== 'plain' ? ` (${selectedTheme} theme)` : '';
+    showLoading(`Converting your text to ${format.toUpperCase()}${themeName}...`);
 
     try {
-      const endpoint = format === 'pdf' ? '/convert-pdf' : '/convert-text-advanced';
+      let endpoint;
+      let body;
+
+      if (format === 'pdf') {
+        // PDF conversion doesn't support themes yet
+        endpoint = '/convert-pdf';
+        body = { markdown: markdownText };
+      } else if (selectedTheme !== 'plain') {
+        // Use themed conversion for non-plain themes
+        endpoint = '/convert-themed';
+        body = { markdown: markdownText, theme: selectedTheme };
+      } else {
+        // Use standard conversion for plain theme
+        endpoint = '/convert-text-advanced';
+        body = { markdown: markdownText, options: advancedOptions };
+      }
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          markdown: markdownText,
-          options: advancedOptions
-        })
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) {
