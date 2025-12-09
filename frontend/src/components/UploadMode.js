@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import AdvancedOptions from './AdvancedOptions';
+import { trackFileUpload, trackEvent, EVENTS } from '../utils/analytics';
 
 const DropZone = styled(Paper)(({ theme, isDragOver }) => ({
   border: `2px dashed ${isDragOver ? theme.palette.primary.main : theme.palette.grey[400]}`,
@@ -168,6 +169,7 @@ const UploadMode = ({ showLoading, hideLoading, showMessage }) => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
+        trackFileUpload(1);
         showMessage('File converted successfully!', 'success');
       } else {
         // Batch conversion
@@ -197,6 +199,7 @@ const UploadMode = ({ showLoading, hideLoading, showMessage }) => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
+        trackFileUpload(selectedFiles.length);
         showMessage(`Successfully converted ${selectedFiles.length} files!`, 'success');
       }
 

@@ -29,6 +29,7 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import AdvancedOptions from './AdvancedOptions';
+import { trackConversion, trackEditorAction, EVENTS } from '../utils/analytics';
 
 const EditorContainer = styled(Paper)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
@@ -164,6 +165,7 @@ const EditorMode = ({ showLoading, hideLoading, showMessage }) => {
       setMarkdownText('');
       localStorage.removeItem(AUTOSAVE_KEY);
       localStorage.removeItem(AUTOSAVE_KEY + '_timestamp');
+      trackEditorAction(EVENTS.CLEAR_EDITOR);
     }
   }, []);
 
@@ -238,9 +240,13 @@ This sample demonstrates all advanced options. Enable different combinations in 
 **Pro Tip:** Try enabling multiple options together to see how they combine!`;
 
     setMarkdownText(sampleMarkdown);
+    trackEditorAction(EVENTS.LOAD_SAMPLE);
   }, []);
 
   const togglePreview = useCallback(() => {
+    if (!previewOpen) {
+      trackEditorAction(EVENTS.OPEN_PREVIEW);
+    }
     setPreviewOpen(!previewOpen);
   }, [previewOpen]);
 
@@ -386,9 +392,14 @@ This sample demonstrates all advanced options. Enable different combinations in 
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
+      // Track successful conversion
+      trackConversion(format, selectedTheme, true);
+
       showMessage('Your document has been converted and downloaded successfully!', 'success');
     } catch (error) {
       console.error('Conversion error:', error);
+      // Track failed conversion
+      trackConversion(format, selectedTheme, false);
       showMessage(`Error converting document: ${error.message}`, 'error');
     } finally {
       hideLoading();
@@ -427,6 +438,7 @@ This sample demonstrates all advanced options. Enable different combinations in 
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
+      trackEditorAction(EVENTS.SAVE_MARKDOWN);
       showMessage('Markdown file saved successfully!', 'success');
     } catch (error) {
       console.error('Save error:', error);

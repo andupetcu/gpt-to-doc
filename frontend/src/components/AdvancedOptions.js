@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Download } from '@mui/icons-material';
+import { trackThemeSelection, trackTemplatePreviewDownload, trackOptionChange } from '../utils/analytics';
 
 const OptionsContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -47,10 +48,12 @@ const THEMES = {
 
 const AdvancedOptions = ({ options, onChange }) => {
   const handleCheckboxChange = (field) => (event) => {
+    const checked = event.target.checked;
     onChange(prev => ({
       ...prev,
-      [field]: event.target.checked
+      [field]: checked
     }));
+    trackOptionChange(field, checked);
   };
 
   const handleTextChange = (field) => (event) => {
@@ -58,13 +61,23 @@ const AdvancedOptions = ({ options, onChange }) => {
       ...prev,
       [field]: event.target.value
     }));
+    // Only track when field has content (not every keystroke)
+    if (event.target.value.trim()) {
+      trackOptionChange(field, 'set');
+    }
   };
 
   const handleThemeChange = (event) => {
+    const newTheme = event.target.value;
     onChange(prev => ({
       ...prev,
-      theme: event.target.value
+      theme: newTheme
     }));
+    trackThemeSelection(newTheme);
+  };
+
+  const handlePreviewClick = (theme) => {
+    trackTemplatePreviewDownload(theme);
   };
 
   const selectedTheme = options.theme || 'plain';
@@ -116,6 +129,7 @@ const AdvancedOptions = ({ options, onChange }) => {
                 href={`/templates/${selectedTheme}.docx`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => handlePreviewClick(selectedTheme)}
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
