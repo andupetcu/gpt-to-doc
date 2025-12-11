@@ -143,14 +143,14 @@ function parseMarkdownToTokens(markdown) {
 // DOCX ELEMENT BUILDERS
 // =============================================================================
 
-function createDocxElements(tokens, theme) {
-  const T = THEMES[theme] || THEMES.plain;
+function createDocxElements(tokens, themeName) {
+  const T = THEMES[themeName] || THEMES.plain;
   const elements = [];
 
   for (const token of tokens) {
     switch (token.type) {
       case 'heading':
-        elements.push(createHeading(token, T));
+        elements.push(createHeading(token, T, themeName));
         break;
       case 'paragraph':
         elements.push(createParagraph(token, T));
@@ -187,9 +187,12 @@ function createDocxElements(tokens, theme) {
   return elements;
 }
 
-function createHeading(token, T) {
+function createHeading(token, T, themeName) {
   const level = token.depth;
   const text = stripHtml(token.text);
+
+  // Some themes use inverted header colors (white text on colored background)
+  const useInvertedH1 = themeName === 'ocean' || themeName === 'midnight';
 
   const headingConfigs = {
     1: {
@@ -197,8 +200,8 @@ function createHeading(token, T) {
       size: T.sizes.h1,
       color: T.colors.primary,
       spacing: { before: 400, after: 200 },
-      shading: theme === 'ocean' || theme === 'midnight' ? { fill: T.colors.primary, type: ShadingType.CLEAR } : undefined,
-      textColor: theme === 'ocean' || theme === 'midnight' ? 'FFFFFF' : T.colors.primary
+      shading: useInvertedH1 ? { fill: T.colors.primary, type: ShadingType.CLEAR } : undefined,
+      textColor: useInvertedH1 ? 'FFFFFF' : T.colors.primary
     },
     2: {
       heading: HeadingLevel.HEADING_2,

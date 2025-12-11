@@ -703,21 +703,32 @@ def convert_md_text_to_themed_docx():
             )
         else:
             # Use Node.js themed converter
-            converter_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'convert-with-theme.js')
+            # In Docker, templates are at /app/templates, backend is at /app/backend
+            templates_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'templates')
+            converter_path = os.path.join(templates_dir, 'convert-with-theme.js')
+
+            logger.info(f"Running themed converter: node {converter_path} {md_path} {docx_path} {theme}")
+            logger.info(f"Templates directory: {templates_dir}")
+
             result = subprocess.run(
                 ["node", converter_path, md_path, docx_path, theme],
                 check=True,
                 capture_output=True,
                 text=True,
-                cwd=os.path.dirname(converter_path)  # Run from templates directory
+                cwd=templates_dir  # Run from templates directory where node_modules is installed
             )
+
+            if result.stdout:
+                logger.info(f"Converter output: {result.stdout}")
 
         logger.info(f"Successfully converted text to themed DOCX: {temp_filename} (theme: {theme})")
         return send_file(docx_path, as_attachment=True, download_name=f"converted-{theme}.docx")
 
     except subprocess.CalledProcessError as e:
-        logger.error(f"Themed conversion failed: {e.stderr}")
-        return jsonify({"error": "Themed conversion failed. Please check your markdown text."}), 500
+        logger.error(f"Themed conversion failed - stderr: {e.stderr}")
+        logger.error(f"Themed conversion failed - stdout: {e.stdout}")
+        logger.error(f"Themed conversion failed - returncode: {e.returncode}")
+        return jsonify({"error": f"Themed conversion failed: {e.stderr or 'Unknown error'}"}), 500
     except Exception as e:
         logger.error(f"Unexpected error in convert_md_text_to_themed_docx: {str(e)}")
         return jsonify({"error": "An unexpected error occurred"}), 500
