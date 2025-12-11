@@ -1,20 +1,3 @@
-# Build stage for React frontend
-FROM node:18-alpine AS frontend-builder
-
-WORKDIR /app/frontend
-
-# Copy package files
-COPY frontend/package*.json ./
-
-# Install dependencies
-RUN npm install --legacy-peer-deps
-
-# Copy source files
-COPY frontend/ .
-
-# Build the React app
-RUN npm run build
-
 # Main application stage
 FROM python:3.9-slim
 
@@ -34,14 +17,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy backend files
+# Copy backend files (includes pre-built React app in backend/build/)
 COPY backend/ backend/
 
 # Copy templates directory
 COPY templates/ templates/
-
-# Copy built React app from builder stage
-COPY --from=frontend-builder /app/frontend/build backend/build/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r backend/requirements.txt
