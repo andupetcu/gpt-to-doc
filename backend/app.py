@@ -685,8 +685,9 @@ def convert_md_text_to_themed_docx():
             return jsonify({"error": "Markdown text is empty"}), 400
 
         temp_filename = str(uuid.uuid4())
-        md_path = os.path.join(Config.UPLOAD_FOLDER, f"{temp_filename}.md")
-        docx_path = os.path.join(Config.OUTPUT_FOLDER, f"{temp_filename}.docx")
+        # Use absolute paths so Node.js converter can find files regardless of cwd
+        md_path = os.path.abspath(os.path.join(Config.UPLOAD_FOLDER, f"{temp_filename}.md"))
+        docx_path = os.path.abspath(os.path.join(Config.OUTPUT_FOLDER, f"{temp_filename}.docx"))
 
         # Write markdown to temp file
         with open(md_path, 'w', encoding='utf-8') as md_file:
