@@ -6,24 +6,19 @@ import {
   Checkbox,
   TextField,
   Grid,
-  Paper,
   Divider,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   Link,
-  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Download } from '@mui/icons-material';
+import { Download, ExpandMore, Settings } from '@mui/icons-material';
 import { trackThemeSelection, trackTemplatePreviewDownload, trackOptionChange } from '../utils/analytics';
-
-const OptionsContainer = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  backgroundColor: theme.palette.grey[50],
-  borderRadius: theme.shape.borderRadius,
-}));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -35,7 +30,6 @@ const OptionGroup = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-// Theme definitions with colors and descriptions
 const THEMES = {
   plain: { name: 'Plain (Default)', description: 'Simple, clean output', color: '#666' },
   color: { name: 'Professional Color', description: 'Blue professional styling', color: '#1F4E79' },
@@ -49,30 +43,18 @@ const THEMES = {
 const AdvancedOptions = ({ options, onChange }) => {
   const handleCheckboxChange = (field) => (event) => {
     const checked = event.target.checked;
-    onChange(prev => ({
-      ...prev,
-      [field]: checked
-    }));
+    onChange(prev => ({ ...prev, [field]: checked }));
     trackOptionChange(field, checked);
   };
 
   const handleTextChange = (field) => (event) => {
-    onChange(prev => ({
-      ...prev,
-      [field]: event.target.value
-    }));
-    // Only track when field has content (not every keystroke)
-    if (event.target.value.trim()) {
-      trackOptionChange(field, 'set');
-    }
+    onChange(prev => ({ ...prev, [field]: event.target.value }));
+    if (event.target.value.trim()) trackOptionChange(field, 'set');
   };
 
   const handleThemeChange = (event) => {
     const newTheme = event.target.value;
-    onChange(prev => ({
-      ...prev,
-      theme: newTheme
-    }));
+    onChange(prev => ({ ...prev, theme: newTheme }));
     trackThemeSelection(newTheme);
   };
 
@@ -83,159 +65,127 @@ const AdvancedOptions = ({ options, onChange }) => {
   const selectedTheme = options.theme || 'plain';
 
   return (
-    <OptionsContainer elevation={1}>
-      <SectionTitle variant="h6" component="h3">
-        Document Theme
-      </SectionTitle>
+    <Accordion defaultExpanded={false} sx={{ mt: 2 }}>
+      <AccordionSummary expandIcon={<ExpandMore />}>
+        <Settings sx={{ mr: 1, color: 'text.secondary' }} />
+        <Typography fontWeight={500}>Document Theme &amp; Advanced Options</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <SectionTitle variant="h6" component="h3">
+          Document Theme
+        </SectionTitle>
 
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="theme-select-label">Export Theme</InputLabel>
-            <Select
-              labelId="theme-select-label"
-              value={selectedTheme}
-              label="Export Theme"
-              onChange={handleThemeChange}
-            >
-              {Object.entries(THEMES).map(([key, theme]) => (
-                <MenuItem key={key} value={key}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      sx={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: '50%',
-                        backgroundColor: theme.color,
-                        border: '1px solid rgba(0,0,0,0.1)',
-                      }}
-                    />
-                    <Box>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="theme-select-label">Export Theme</InputLabel>
+              <Select
+                labelId="theme-select-label"
+                value={selectedTheme}
+                label="Export Theme"
+                onChange={handleThemeChange}
+              >
+                {Object.entries(THEMES).map(([key, theme]) => (
+                  <MenuItem key={key} value={key}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ width: 16, height: 16, borderRadius: '50%', backgroundColor: theme.color, border: '1px solid rgba(0,0,0,0.1)' }} />
                       <Typography variant="body2">{theme.name}</Typography>
                     </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="body2" color="text.secondary">
+                {THEMES[selectedTheme]?.description}
+              </Typography>
+              {selectedTheme !== 'plain' && (
+                <Link
+                  href={`/templates/${selectedTheme}.docx`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handlePreviewClick(selectedTheme)}
+                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem', ml: 1 }}
+                >
+                  <Download sx={{ fontSize: 14 }} />
+                  Preview
+                </Link>
+              )}
+            </Box>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        <SectionTitle variant="h6" component="h3">
+          Advanced Options
+        </SectionTitle>
+
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <OptionGroup>
+              <FormControlLabel
+                control={<Checkbox checked={options.enableToc} onChange={handleCheckboxChange('enableToc')} color="primary" />}
+                label={
+                  <Box>
+                    <Typography variant="body1" fontWeight={500}>Table of Contents</Typography>
+                    <Typography variant="caption" color="text.secondary">Generate automatic table of contents</Typography>
                   </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                }
+              />
+            </OptionGroup>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <OptionGroup>
+              <FormControlLabel
+                control={<Checkbox checked={options.numberedSections} onChange={handleCheckboxChange('numberedSections')} color="primary" />}
+                label={
+                  <Box>
+                    <Typography variant="body1" fontWeight={500}>Numbered Sections</Typography>
+                    <Typography variant="caption" color="text.secondary">Automatically number headings (1.1, 1.2, etc.)</Typography>
+                  </Box>
+                }
+              />
+            </OptionGroup>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Typography variant="body2" color="text.secondary">
-              {THEMES[selectedTheme]?.description}
-            </Typography>
-            {selectedTheme !== 'plain' && (
-              <Link
-                href={`/templates/${selectedTheme}.docx`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => handlePreviewClick(selectedTheme)}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  fontSize: '0.75rem',
-                  ml: 1,
-                }}
-              >
-                <Download sx={{ fontSize: 14 }} />
-                Preview
-              </Link>
-            )}
-          </Box>
-        </Grid>
-      </Grid>
 
-      <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 3 }} />
 
-      <SectionTitle variant="h6" component="h3">
-        Advanced Options
-      </SectionTitle>
+        <SectionTitle variant="h6" component="h4">
+          Custom Headers &amp; Footers
+        </SectionTitle>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <OptionGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={options.enableToc}
-                  onChange={handleCheckboxChange('enableToc')}
-                  color="primary"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="body1" fontWeight={500}>
-                    Table of Contents
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Generate automatic table of contents
-                  </Typography>
-                </Box>
-              }
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Header Text"
+              value={options.customHeader}
+              onChange={handleTextChange('customHeader')}
+              placeholder="e.g., Company Name - Document Title"
+              helperText="Text to appear at the top of each page"
+              variant="outlined"
+              size="small"
             />
-          </OptionGroup>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <OptionGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={options.numberedSections}
-                  onChange={handleCheckboxChange('numberedSections')}
-                  color="primary"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="body1" fontWeight={500}>
-                    Numbered Sections
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Automatically number headings (1.1, 1.2, etc.)
-                  </Typography>
-                </Box>
-              }
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Footer Text"
+              value={options.customFooter}
+              onChange={handleTextChange('customFooter')}
+              placeholder="e.g., Page $page$ of $total$"
+              helperText="Text to appear at the bottom of each page"
+              variant="outlined"
+              size="small"
             />
-          </OptionGroup>
+          </Grid>
         </Grid>
-      </Grid>
-
-      <Divider sx={{ my: 3 }} />
-
-      <SectionTitle variant="h6" component="h4">
-        Custom Headers & Footers
-      </SectionTitle>
-
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Header Text"
-            value={options.customHeader}
-            onChange={handleTextChange('customHeader')}
-            placeholder="e.g., Company Name - Document Title"
-            helperText="Text to appear at the top of each page"
-            variant="outlined"
-            size="small"
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Footer Text"
-            value={options.customFooter}
-            onChange={handleTextChange('customFooter')}
-            placeholder="e.g., Page $page$ of $total$"
-            helperText="Text to appear at the bottom of each page"
-            variant="outlined"
-            size="small"
-          />
-        </Grid>
-      </Grid>
-    </OptionsContainer>
+      </AccordionDetails>
+    </Accordion>
   );
 };
 

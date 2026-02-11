@@ -56,6 +56,21 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
+def sanitize_latex_input(text):
+    """Strip potentially dangerous LaTeX commands from user input."""
+    if not text:
+        return text
+    # Remove common LaTeX injection patterns
+    dangerous = re.compile(
+        r'\\(input|include|write|read|openin|openout|newwrite|immediate|catcode|def|edef|gdef|xdef|csname|endcsname|expandafter|the|directlua|latelua|ShellEscape|write18)\b',
+        re.IGNORECASE
+    )
+    text = dangerous.sub('', text)
+    # Remove raw backslashes that could form commands (but keep harmless ones)
+    # Strip any remaining backslash-command patterns
+    text = re.sub(r'\\[a-zA-Z]+', '', text)
+    return text.strip()
+
 def build_pandoc_command(md_path, docx_path, options):
     """Build Pandoc command with advanced options."""
     pandoc_args = ["pandoc", md_path, "-o", docx_path]
@@ -74,8 +89,8 @@ def build_pandoc_command(md_path, docx_path, options):
     pandoc_args.append("--no-highlight")
     
     # Store custom header/footer for metadata processing
-    custom_header = options.get('customHeader', '').strip()
-    custom_footer = options.get('customFooter', '').strip()
+    custom_header = sanitize_latex_input(options.get('customHeader', '').strip())
+    custom_footer = sanitize_latex_input(options.get('customFooter', '').strip())
     
     # Add header and footer if provided
     if custom_header:
@@ -231,11 +246,15 @@ def serve_frontend():
 
 @app.route('/<path:filename>')
 def serve_static(filename):
-    """Serve React build static files."""
+    """Serve React build static files with proper caching."""
     response = send_from_directory("build", filename)
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
+    # Hashed static assets (JS/CSS bundles) get long-term caching
+    if filename.startswith('static/'):
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    else:
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
     return response
 
 @app.route('/convert', methods=['POST'])
@@ -584,7 +603,7 @@ def convert_md_to_pdf():
             "pandoc", md_path, "-o", pdf_path,
             "--pdf-engine=xelatex",  # Use XeLaTeX for Unicode
             "--variable", "geometry:a4paper",  # Set A4 page size
-            "--variable", "mainfont=Arial"  # Use a Unicode-compatible font
+            "--variable", "mainfont=DejaVu Sans"  # Use a Unicode-compatible font available in Debian
         ], check=True, capture_output=True, text=True)
 
         logger.info(f"Successfully converted text to PDF: {temp_filename}")
