@@ -22,7 +22,7 @@ import { styled } from '@mui/material/styles';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { oneDark } from '@uiw/codemirror-theme-oneDark';
+import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import AdvancedOptions from './AdvancedOptions';
@@ -105,7 +105,7 @@ const EditorMode = ({ showLoading, hideLoading, showMessage, themeMode }) => {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, []);
 
   // Auto-save: persist
@@ -359,7 +359,7 @@ This sample demonstrates all advanced options.`;
     showMessage('ChatGPT conversation imported! Review and convert.', 'success');
   }, [showMessage]);
 
-  const cmTheme = themeMode === 'dark' ? oneDark : githubLight;
+  const cmTheme = themeMode === 'dark' ? vscodeDark : githubLight;
 
   // Split pane: side-by-side on desktop, toggle on mobile
   const showSplitPreview = previewOpen && !isMobile;
