@@ -17,8 +17,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy backend files (includes pre-built React app in backend/build/)
+# Copy and build React frontend
+COPY frontend/ frontend/
+WORKDIR /app/frontend
+RUN npm ci --production=false && npm run build
+RUN mv build /app/backend_build
+
+WORKDIR /app
+
+# Copy backend files
 COPY backend/ backend/
+
+# Move frontend build into backend's static directory
+RUN mv /app/backend_build backend/build
 
 # Copy templates directory
 COPY templates/ templates/
