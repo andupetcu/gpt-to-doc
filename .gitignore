@@ -48,3 +48,5 @@ backend/outputs/*
 backend/uploads/*
 missfont.log
 .env
+backend/build/
+frontend/.duckversions/

@@ -20,23 +20,12 @@ from config import Config
 app = Flask(__name__, static_folder="build", static_url_path="/")
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_FILE_SIZE
 
-# Enable CORS for Next.js frontend
-CORS(app,
-    resources={
-        r"/convert*": {
-            "origins": ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://192.168.68.50:3000", "http://192.168.68.50:3001"],
-            "methods": ["GET", "POST", "OPTIONS"],
-            "allow_headers": ["Content-Type"],
-            "supports_credentials": True
-        },
-        r"/save-md": {
-            "origins": ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://192.168.68.50:3000", "http://192.168.68.50:3001"],
-            "methods": ["GET", "POST", "OPTIONS"],
-            "allow_headers": ["Content-Type"],
-            "supports_credentials": True
-        }
-    }
-)
+# CORS: same-origin app in production; allow localhost in dev
+_cors_origins = os.environ.get("CORS_ORIGINS", "").split(",")
+_cors_origins = [o.strip() for o in _cors_origins if o.strip()]
+if _cors_origins:
+    CORS(app, resources={r"/*": {"origins": _cors_origins, "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type"]}})
+# When no CORS_ORIGINS env var is set, CORS headers are not added (same-origin is fine)
 
 # Setup logging
 logging.basicConfig(
