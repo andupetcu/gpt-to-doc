@@ -47,3 +47,4 @@ yarn-error.log
 backend/outputs/*
 backend/uploads/*
 missfont.log
+.env
